@@ -11,9 +11,13 @@ export function Button(
       classList={{
         "rounded-[0.256em] p-3 text-white min-w-[164px] font-medium transition-colors shadow shadow-sm":
           true,
-        "bg-amber-600 hover:bg-amber-700 active:bg-amber-800": !props.outlined,
+        "bg-amber-600 hover:bg-amber-700 active:bg-amber-800":
+          !props.outlined && !props.disabled,
         "bg-white border border-amber-600 hover:bg-amber-100 active:bg-amber-200 text-amber-600":
-          props.outlined,
+          props.outlined && !props.disabled,
+        "bg-amber-900 text-gray-400": !props.outlined && props.disabled,
+        "border border-amber-600 text-gray-400":
+          props.outlined && props.disabled,
       }}
     >
       {props.children}

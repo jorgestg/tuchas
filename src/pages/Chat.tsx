@@ -76,7 +76,7 @@ export default function Chat(props: { session: Session }) {
   });
 
   return (
-    <div class="max-w-[1000px] w-[90%] bg-white h-[90%] flex flex-col rounded-md shadow-lg p-4">
+    <div class="max-w-[1000px] w-[95%] bg-white h-[90%] flex flex-col rounded-md shadow-lg p-4">
       <div class="w-full flex justify-end">
         <Logo />
       </div>
@@ -90,7 +90,25 @@ export default function Chat(props: { session: Session }) {
           name="message"
           required
         />
-        <Button type="submit">Enviar</Button>
+        <Button
+          type="submit"
+          class="flex justify-center items-center text-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            width="1em"
+            height="1em"
+            preserveAspectRatio="xMidYMid meet"
+            viewBox="0 0 16 16"
+          >
+            <path
+              fill="currentColor"
+              d="M1.724 1.053a.5.5 0 0 0-.714.545l1.403 4.85a.5.5 0 0 0 .397.354l5.69.953c.268.053.268.437 0 .49l-5.69.953a.5.5 0 0 0-.397.354l-1.403 4.85a.5.5 0 0 0 .714.545l13-6.5a.5.5 0 0 0 0-.894l-13-6.5Z"
+            />
+          </svg>
+          <span class="hidden sm:inline">Enviar</span>
+        </Button>
       </form>
     </div>
   );

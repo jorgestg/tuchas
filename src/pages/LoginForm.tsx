@@ -1,6 +1,5 @@
 import { ApiError, PostgrestError, Session } from "@supabase/supabase-js";
-import { Show } from "solid-js";
-import { createStore } from "solid-js/store";
+import { createSignal, Show } from "solid-js";
 
 import { api } from "../api";
 import { Button, FormField, Input } from "../components/FormControls";
@@ -14,53 +13,43 @@ interface Profile {
 export default function LoginForm(props: {
   onLogin: (session: Session) => void;
 }) {
-  const [state, setState] = createStore({
-    email: "",
-    password: "",
-    displayName: "",
-    loading: false,
-    signUpMode: false,
-  });
+  const [loading, setLoading] = createSignal(false);
+  const [signUpMode, setSignUpMode] = createSignal(false);
+  const [error, setError] = createSignal("");
 
   function toggleSignUpMode() {
-    setState("signUpMode", (prev) => !prev);
-  }
-
-  function set<K extends keyof typeof state>(key: K, value: typeof state[K]) {
-    setState(key, value);
+    setSignUpMode((prev) => !prev);
   }
 
   async function handleSubmit(e: SubmitEvent) {
     e.preventDefault();
-    set("loading", true);
+
+    const form = new FormData(e.target as HTMLFormElement);
+    const { email, password, displayName } = Object.fromEntries(
+      [...form.entries()].map(([key, value]) => [key, value.toString()])
+    );
 
     try {
+      setLoading(true);
       let error: ApiError | PostgrestError | null, session: Session | null;
 
       // Sign up & create profile
-      if (state.signUpMode) {
-        const signUpResult = await api.auth.signUp({
-          email: state.email,
-          password: state.password,
-        });
-
+      if (signUpMode()) {
+        const signUpResult = await api.auth.signUp({ email, password });
         if (signUpResult.error) {
-          throw signUpResult.error;
+          setError(signUpResult.error.message);
+          return;
         }
 
         const createProfileResult = await api.from<Profile>("profiles").insert({
-          display_name: state.displayName,
+          display_name: displayName,
         });
 
         session = signUpResult.session;
         error = createProfileResult.error;
       } else {
         // Sign in
-        const result = await api.auth.signIn({
-          email: state.email,
-          password: state.password,
-        });
-
+        const result = await api.auth.signIn({ email, password });
         error = result.error;
         session = result.session;
       }
@@ -70,75 +59,58 @@ export default function LoginForm(props: {
         return;
       }
 
-      throw error;
+      setError(error.message);
     } finally {
-      set("loading", false);
+      setLoading(false);
     }
   }
 
   return (
     <form
       onSubmit={handleSubmit}
-      class="flex flex-col justify-center items-center gap-6 p-8 bg-white rounded-md h-[450px] w-[450px] shadow-lg"
+      class="flex flex-col justify-between items-center p-8 bg-white rounded-md h-[480px] w-[95%] max-w-[450px] shadow-lg"
     >
-      <Show
-        when={!state.loading}
-        fallback={<h1 class="font-semibold text-3xl">Iniciando sesión...</h1>}
-      >
-        <Logo />
+      <Logo />
 
+      <div class="flex flex-col w-full gap-4">
         {/* Display name */}
-        <Show when={state.signUpMode}>
-          <FormField class="w-full" label="Nombre">
-            <Input
-              class="w-full"
-              type="text"
-              required
-              onChange={({ currentTarget }) =>
-                set("displayName", currentTarget.value)
-              }
-            />
+        <Show when={signUpMode()}>
+          <FormField label="Nombre">
+            <Input class="w-full" type="text" name="displayName" required />
           </FormField>
         </Show>
 
         {/* Email */}
-        <FormField class="w-full" label="Email">
-          <Input
-            type="email"
-            class="w-full"
-            required
-            onChange={({ currentTarget }) => set("email", currentTarget.value)}
-          />
+        <FormField label="Email">
+          <Input class="w-full" type="email" name="email" required />
         </FormField>
 
         {/* Password */}
-        <FormField class="w-full" label="Contraseña">
-          <Input
-            class="w-full"
-            type="password"
-            required
-            onChange={({ currentTarget }) =>
-              set("password", currentTarget.value)
-            }
-          />
+        <FormField label="Contraseña">
+          <Input class="w-full" type="password" name="password" required />
         </FormField>
+      </div>
 
-        <div class="flex gap-2">
-          {/* Sign in */}
-          <Button type="submit" class="w-full">
-            {state.signUpMode ? "Registrarse" : "Iniciar sesión"}
-          </Button>
-          {/* Sign up */}
-          <Button
-            type="button"
-            class="w-full"
-            outlined
-            onClick={toggleSignUpMode}
-          >
-            {state.signUpMode ? "Iniciar sesión" : "Registrarse"}
-          </Button>
-        </div>
+      <Show when={error()}>
+        <span class="text-red-500 text-center">{error()}</span>
       </Show>
+
+      <div class="flex gap-2">
+        {/* Sign in */}
+        <Button type="submit" disabled={loading()}>
+          {signUpMode() ? "Registrarse" : "Iniciar sesión"}
+        </Button>
+
+        {/* Sign up */}
+        <Button
+          type="button"
+          outlined
+          disabled={loading()}
+          onClick={toggleSignUpMode}
+        >
+          {signUpMode() ? "Iniciar sesión" : "Registrarse"}
+        </Button>
+      </div>
     </form>
   );
 }

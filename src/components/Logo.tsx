@@ -4,7 +4,7 @@ export default function Logo() {
       <svg
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
-        width="1.875rem"
+        width="2rem"
         preserveAspectRatio="xMidYMid meet"
         viewBox="0 0 16 16"
       >
@@ -13,7 +13,7 @@ export default function Logo() {
           <path d="M8 3.993c1.664-1.711 5.825 1.283 0 5.132c-5.825-3.85-1.664-6.843 0-5.132Z" />
         </g>
       </svg>
-      <h1 class="font-bold text-3xl">TuChas</h1>
+      <span class="font-bold text-4xl">TuChas</span>
     </div>
   );
 }
